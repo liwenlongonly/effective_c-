@@ -31,7 +31,7 @@
    //替换为如下
    const double AspectRatio = 1.653; // 使用次常量替换上面的宏定义 ,大写名称通常用于宏，
 
-   II 因此这里改变名称写法。
+   // 因此这里改变名称写法。
    const char* const authorName = "ilong";
    const std::string authorName("ilong");
    ```
