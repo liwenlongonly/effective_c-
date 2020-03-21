@@ -60,12 +60,11 @@
    
    看看下面不可思议的事情:
    */
-   
+  
    int a = 5, b = 0;
    CALL_WITH_MAX(++a, b); // 被累加二次
    
    CALL_WITH_MAX(++a, b+l0); // 被累加一次
-   ```
    
    //替换为下面的方式
    template<typename T>
@@ -73,8 +72,7 @@
    inline int callWithMax(const T& a , const T& b){
       return a > b ? a : b;
    } 
-
-```
+   ```
 
 **请记住:  
 ·对于单纯常量，最好以 canst 对象或 enums 替换 #defineso  。
@@ -90,7 +88,7 @@
    const char* p = greeting; //non-const pointer, const data
    char* const p = greeting; //const pointer, non-const data
    const char* const p = greeting; //const pointer, const data
-```
+   ```
 
 * const 语法虽然变化多端，但并不莫测高深。如果关键字 const 出现在星号左
   边，表示被指物是常量:如果出现在星号右边，表示指针自身是常量:如果出现在
@@ -100,7 +98,7 @@
   它写在类型之后、星号之前。两种写法的意义相同，所以下列两个函数接受的参数
   类型是一样的，如下：
   
-  ```
+  ```cpp
   void f1(const Widget* pw);
   void f2(Widget const * pw);
   ```
@@ -119,15 +117,13 @@
    *iter = 10;       //没问题，改变 iter 所指物
    
    ++iter;           //错误! iter 是const
-   ```
    
    std::vector<int>::const_iterator clter = vec.begin(); //clter 的作用像个 const T*
    
    *clter = 10;      //错误! *clter 是const
    
    ++clter;          // 没问题，改变 clter
-
-```
+   ```
 
 3. const 成员函数
 
@@ -154,11 +150,11 @@
     std::cout<< tb[O] <<std::endl; //调用 non-const TextBlock::operator[]
     const TextBlock ctb("World");
     std::cout<< ctb[O] <<std::endl; //调用 const TextBlock::operator[]
-```
+    ```
 
    在 const 和 non-const成员函数中避免重复，mutable 是个解决办法；
 
-```cpp
+   ```cpp
    class CTextBlock {
    public:
        std::size_t length() const;
@@ -180,7 +176,7 @@
        }
        return textLength;
    }
-```
+   ```
 
 **请记住  
 ·将某些东西声明为 const 可帮助编译器侦测出错误用法。 const 可被施加于任何作用域内的对象、函数参数、函数返回类型、成员函数本体。  
