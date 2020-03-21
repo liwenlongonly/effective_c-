@@ -30,7 +30,7 @@
    #define ASPECT_RATIO 1.653
    //替换为如下
    const double AspectRatio = 1.653; // 使用次常量替换上面的宏定义 ,大写名称通常用于宏，
-
+   
    // 因此这里改变名称写法。
    const char* const authorName = "ilong";
    const std::string authorName("ilong");
@@ -50,31 +50,28 @@
    
    ```cpp
    // 以 a 和 b 的较大值调用 f
-
+   
    #define CALL WITH MAX (a, b) f ((a) > (b) ? (a) : (b))
    
    /*
    无论何时当你写出这种宏，你必须记住为宏中的所有实参加上小括号，否则某
-
+   
    些人在表达式中调用这个宏时可能会遭遇麻烦。但纵使你为所有实参加上小括号，
-
+   
    看看下面不可思议的事情:
    */
    
    int a = 5, b = 0;
    CALL_WITH_MAX(++a, b); // 被累加二次
-
-   CALL_WITH_MAX(++a, b+l0); // 被累加一次
-
    
-
+   CALL_WITH_MAX(++a, b+l0); // 被累加一次
+  
    //替换为下面的方式
    template<typename T>
 
    inline int callWithMax(const T& a , const T& b){
       return a > b ? a : b;
    } 
-   
 
    ```
 
@@ -85,7 +82,7 @@
 #### 条款03：尽可能使用const
 
 1. const常用法，如下：
-   
+
    ```cpp
    char greeting[] = "hello";
    char* p = greeting; //non-const pointer, non-const data
@@ -93,20 +90,19 @@
    char* const p = greeting; //const pointer, non-const data
    const char* const p = greeting; //const pointer, const data
    ```
-   
-   * const 语法虽然变化多端，但并不莫测高深。如果关键字 const 出现在星号左
-     边，表示被指物是常量:如果出现在星号右边，表示指针自身是常量:如果出现在
-     星号两边，表示被指物和指针两者都是常量。
-   
-   * 如果被指物是常量，有些程序员会将关键字 const 写在类型之前，有些人会把
-     它写在类型之后、星号之前。两种写法的意义相同，所以下列两个函数接受的参数
-     类型是一样的，如下：
-   
-   ```
-   void f1(const Widget* pw);
-   void f2(Widget const * pw);
-   ```
 
+* const 语法虽然变化多端，但并不莫测高深。如果关键字 const 出现在星号左
+  边，表示被指物是常量:如果出现在星号右边，表示指针自身是常量:如果出现在
+  星号两边，表示被指物和指针两者都是常量。
+
+* 如果被指物是常量，有些程序员会将关键字 const 写在类型之前，有些人会把
+  它写在类型之后、星号之前。两种写法的意义相同，所以下列两个函数接受的参数
+  类型是一样的，如下：
+  
+  ```cpp
+  void f1(const Widget* pw);
+  void f2(Widget const * pw);
+  ```
 2. STL迭代器使用const：
    
    STL 选代器系以指针为根据塑模出来，所以迭代器的作用就像个?指针。声
@@ -118,12 +114,11 @@
    ```cpp
    std::vector<int> vec;
    const std::vector<int>::iterator_iter = vec.begin(); //iter 的作用像个 T* const
-
+   
    *iter = 10;       //没问题，改变 iter 所指物
-
+   
    ++iter;           //错误! iter 是const
 
-   
    std::vector<int>::const_iterator clter = vec.begin(); //clter 的作用像个 const T*
 
    *clter = 10;      //错误! *clter 是const
@@ -132,7 +127,7 @@
    ```
 
 3. const 成员函数
-   
+
    将 const 实施于成员函数的目的，是为了确认该成员函数可作用于 const 对象
    身上。这一类成员函数之所以重要，基于两个理由。第一，它们使 class 接口比较
    容易被理解。这是因为，得知哪个函数可以改动对象内容而哪个函数不行，很是重
@@ -140,7 +135,7 @@
    为如条款 20 所言，改善 C++ 程序效率的一个根本办法是以 pass by
    reference-to-const 方式传递对象，而此技术可行的前提是，我们有const 成员函数
    可用来处理取得(并经修饰而成)的canst对象。
-   
+
    ```cpp
    class TextBlock {
    public:
@@ -156,15 +151,15 @@
     std::cout<< tb[O] <<std::endl; //调用 non-const TextBlock::operator[]
     const TextBlock ctb("World");
     std::cout<< ctb[O] <<std::endl; //调用 const TextBlock::operator[]
-   ```
-   
+    ```
+
    在 const 和 non-const成员函数中避免重复，mutable 是个解决办法；
-   
+
    ```cpp
    class CTextBlock {
    public:
        std::size_t length() const;
-   
+
    private:
        char *pText;
        mutable std::size_t textLength; //这些成员变量可能总
@@ -172,7 +167,7 @@
        mutable bool lengthIsValid;     //会被更改，即使在
 
    };                                  //const成员函数内。
-   
+
    std::size_t CTextBlock::length() const {
        if (!lengthIsValid) {
            textLength = std::strlen(pText); //现在，可以这样，
@@ -210,9 +205,9 @@
                     const std::string& address,
                      const std::list<PhoneNumber>& phones){
        theName = name;        //这些都是赋值 (assignments) ,
-
+   
        theAddress = address;  //而非初始化 (initializations)。
-
+   
        thePhones = phones;
        numTimesConsulted= 0;
    };
@@ -238,7 +233,7 @@
    
    template <class T>
    class Singleton {
-      
+   
    public:
       static T* instance(){
          std::call_once(mOnce, [&](){
@@ -246,14 +241,14 @@
          });
          return mInstance.get();
       }
-      
+   
       Singleton(const Singleton&) = delete;//禁用copy方法
       const Singleton& operator=( const Singleton&) = delete;//禁用赋值方法
    
    private:
       Singleton(){};
       ~Singleton(){};
-      
+   
    private:
       static std::once_flag mOnce;
       static std::unique_ptr<T> mInstance;
