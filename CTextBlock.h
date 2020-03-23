@@ -5,7 +5,7 @@
 #ifndef EFFECTIVE_C_CTEXTBLOCK_H
 #define EFFECTIVE_C_CTEXTBLOCK_H
 
-class CTextBlock {
+class CTextBlock final{
 public:
     CTextBlock(char * text){
         pText = text;

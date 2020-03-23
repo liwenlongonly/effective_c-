@@ -2,6 +2,8 @@
 
 ### 一 ，让自己习惯C++
 
+---
+
 #### 条款01：视C++为一个语言联邦
 
 1. C
@@ -65,14 +67,13 @@
    CALL_WITH_MAX(++a, b); // 被累加二次
    
    CALL_WITH_MAX(++a, b+l0); // 被累加一次
-  
+   
    //替换为下面的方式
    template<typename T>
-
+   
    inline int callWithMax(const T& a , const T& b){
       return a > b ? a : b;
    } 
-
    ```
 
 **请记住:  
@@ -82,7 +83,7 @@
 #### 条款03：尽可能使用const
 
 1. const常用法，如下：
-
+   
    ```cpp
    char greeting[] = "hello";
    char* p = greeting; //non-const pointer, non-const data
@@ -90,7 +91,6 @@
    char* const p = greeting; //const pointer, non-const data
    const char* const p = greeting; //const pointer, const data
    ```
-
 * const 语法虽然变化多端，但并不莫测高深。如果关键字 const 出现在星号左
   边，表示被指物是常量:如果出现在星号右边，表示指针自身是常量:如果出现在
   星号两边，表示被指物和指针两者都是常量。
@@ -118,16 +118,16 @@
    *iter = 10;       //没问题，改变 iter 所指物
    
    ++iter;           //错误! iter 是const
-
+   
    std::vector<int>::const_iterator clter = vec.begin(); //clter 的作用像个 const T*
-
+   
    *clter = 10;      //错误! *clter 是const
-
+   
    ++clter;          // 没问题，改变 clter
    ```
 
 3. const 成员函数
-
+   
    将 const 实施于成员函数的目的，是为了确认该成员函数可作用于 const 对象
    身上。这一类成员函数之所以重要，基于两个理由。第一，它们使 class 接口比较
    容易被理解。这是因为，得知哪个函数可以改动对象内容而哪个函数不行，很是重
@@ -135,7 +135,7 @@
    为如条款 20 所言，改善 C++ 程序效率的一个根本办法是以 pass by
    reference-to-const 方式传递对象，而此技术可行的前提是，我们有const 成员函数
    可用来处理取得(并经修饰而成)的canst对象。
-
+   
    ```cpp
    class TextBlock {
    public:
@@ -151,29 +151,29 @@
     std::cout<< tb[O] <<std::endl; //调用 non-const TextBlock::operator[]
     const TextBlock ctb("World");
     std::cout<< ctb[O] <<std::endl; //调用 const TextBlock::operator[]
-    ```
-
+   ```
+   
    在 const 和 non-const成员函数中避免重复，mutable 是个解决办法；
-
+   
    ```cpp
    class CTextBlock {
    public:
        std::size_t length() const;
-
+   
    private:
        char *pText;
        mutable std::size_t textLength; //这些成员变量可能总
-
+   
        mutable bool lengthIsValid;     //会被更改，即使在
-
+   
    };                                  //const成员函数内。
-
+   
    std::size_t CTextBlock::length() const {
        if (!lengthIsValid) {
            textLength = std::strlen(pText); //现在，可以这样，
-
+   
            lengthIsValid = true;            //也可以这样。
-
+   
        }
        return textLength;
    }
@@ -271,3 +271,128 @@
 ·为免除"跨编译单元之初始化次序"问题，请以local static 对象替换 non-local  static 对象。**
 
 ### 二，构造/析构/赋值运算
+
+---
+
+#### 条款05：了解C++默默编写并调用哪些函数
+
+1. 什么时候 empty class (空类)不再是个 empty class 呢?当 C++ 处理过它之后。
+   是的，如果你自己没声明，编译器就会为它声明(编译器版本的)二个 copy构造函
+   数、一个 copy assignment操作符和一个析构函数。此外如果你没有声明任何构造函
+   数，编译器也会为你声明一个 default构造函数。所有这些函数都是 public 且 inline；
+   
+   ```
+   //因此，如果你写下:
+   
+   class Empty { };
+   //这就好像你写下这样的代码:
+   
+   class Empty {
+   public:
+       Empty() { ... }                             //default 构造函数
+   
+       Empty(const Empty& rhs) { ... )             //copy 构造函数
+   
+       ~Empty( ) { ... }                           //析构函数，不是virtual  
+   
+       Empty& operator=(const Empty& rhs) { ... }  // copy assignment操作符.
+   
+   }
+   ```
+   
+   惟有当这些函数被需要(被调用) ，它们才会被编译器创建出来。程序中需要
+   它们是很平常的事。下面代码造成上述每一个函数被编译器产出:
+   
+   ```
+   Empty el;     // default构造函数
+                 // 析构函数
+   Emptye2(el);  // copy构造函数
+   e2 = el;      // copy assignment操作
+   ```
+
+2. 拷贝构造函数和赋值函数都是按位copy的，所以当类中有指针和引用时就要注意：
+   
+   ```cpp
+   template<class T>
+   class NamedObject {
+   public:
+       // 以下构造函数如今不再接受一个const 名称，因为 nameValue
+       //如今是个 reference-to-non-const stringo 先前那个 char* 构造函数
+       // 己经过去了，因为必须有个string可供指涉。
+       NamedObject(std::string& name, const T& value);
+   private:
+       std::string& nameValue; //这如今是个reference
+       const T objectValue; //这如今是个const
+   }
+   
+   std: :string newDog("Persephone");
+   std: :string oldDog("Satch");
+   NamedObject<int> p(newDog, 2);
+   NamedObject<int> s(oldDog, 36);
+   p = s;                         // //现在 p 的成员变量该发生什么事?
+   ```
+   
+   面对这个难题， C++ 的响应是拒绝编译那一行赋值动作。如果你打算在一个"内含 reference 成员"的class 内支持赋值操作 (assignment) ，你必须自己定义 copyass匈nment 操作符。面对"内含 const 成员" (如本例之 objectValue) 的 classes ，
+   编译器的反应也一样。更改 const 成员是不合法的，所以编译器不知道如何在它自
+   己生成的赋值函数内面对它们。最后还有一种情况:如果某个 base classes 将 copy
+   ass匈nment 操作符声明为 private ，编译器将拒绝为其 derived classes 生成一个 copy
+   assignment 操作符。毕竟编译器为 derived classes 所生的 copy assignment 操作符想
+   象中可以处理 base class 成分(见条款 12) ，但它们当然无法调用 derived class 无权
+   调用的成员函数。编译器两手一摊，无能为力。
+
+**请记住  
+·编译器可以暗自为 class 创建 default构造函数、 copy构造函数、 copyassignment 操 
+作符，以及析构函数。**
+
+#### 条款 06：若不想使用编译器自动生成的函数，就该   明确拒绝
+
+1. 禁止编译器生成拷贝构造和赋值函数
+   
+   ```cpp
+   class HomeForSale {
+   public:
+       HomeForSale(const HomeForSale &) = delete;
+       HomeForSale &operator=(const HomeForSale &) = delete;
+   }
+   ```
+
+#### 条款 07: 为多态墓类声明 virtual 析构函数
+
+1. 有许多种做法可以记录时间，因此，设计一个TimeKeeper base class 和一些 derived classes 作为不同的计时方法，相当合情合理:
+   
+   ```cpp
+   class TimeKeeper {
+   public:
+       TimeKeeper () ;
+       ~TimeKeeper () ;
+   }
+   
+   class AtomicClock: public TimeKeeper { }; //原子钟
+   class WaterClock: public TimeKeeper { };  //水钟
+   class WristWatch: public TimeKeeper { };  //腕表
+   ```
+   
+   许多客户只想在程序中使用时间，不想操心时间如何计算等细节，这时候我们可以设计 factory (工厂)函数，返回指针指向一个计时对象。Factory 函数会"返回一个 base class 指针，指向新生成之derived class 对象" 
+   
+   ```cpp
+   TimeKeeper* getTimeKeeper();
+   
+   delete ptk; //无法释放子类的资源，因为子类的析构函数不是虚函数
+   
+   //正确方式
+   class TimeKeeper {
+   public:
+       TimeKeeper( );
+       virtual ~TimeKeeper();
+   };
+   TimeKeeper* ptk = getTimeKeeper();
+   delete ptk; //现在，行为正确。
+   ```
+
+**请记住
+• polymorphic (带多态性质的) base classes 应该声明一个 virtual 析构函数。如果class 带有任何 virtual 函数，它就应该拥有一个 virtual 析构函数。
+• Classes 的设计目的如果不是作为 base classes 使用，或不是为了具备多态性(polymorphically) ，就不该声明 virtual 析构函数。**
+
+#### 条款 08: 到让异常逃离析构函数
+
+1. 
